@@ -1,46 +1,46 @@
 //
-// Created by hector on 2021/7/7.
+// Created by xinjian
 //
 
-#ifndef TUTORIAL_CPP_COMMON_LOGGER_H
-#define TUTORIAL_CPP_COMMON_LOGGER_H
+#ifndef LOGGER_H
+#define LOGGER_H
 
-#include <cstddef>
-#include <cstdint>
-#include <cstdarg>
+// 不能删，strrchr() 需要引入它
+#include <string>
 
-#ifdef _MSC_VER
-#define EXPORT __declspec(dllexport)
-#else
-#define EXPORT
-#endif
+#include "defs.h"
 
-namespace logger {
+namespace logger
+{
 
-const int _VERBOSE_             = 0;
-const int _DEBUG_               = 1;
-const int _INFO_                = 2;
-const int _WARN_                = 3;
-const int _ERROR_               = 4;
-const int _FATAL_               = 5;
-const int _OFF_                 = 6;
+    const int _VERBOSE_             = 2;
+    const int _DEBUG_               = 3;
+    const int _INFO_                = 4;
+    const int _WARN_                = 5;
+    const int _ERROR_               = 6;
+    const int _FATAL_               = 7;
 
-typedef void (*log_file_rotate_callback_t)(char const * preLogFile, char const * nextLogFile);
+    EXPORT int init(char const * const rootDir,
+                 char const * const baseLogFileName = "log",
+                 bool console = true,
+                 int minutes = 20,
+                 int priority = _VERBOSE_,
+                 std::function<void(const std::string &filename)> before_open = nullptr,
+                 std::function<void(const std::string &filename, std::FILE *file_stream)> after_open = nullptr,
+                 std::function<void(const std::string &filename, std::FILE *file_stream)> before_close = nullptr,
+                 std::function<void(const std::string &filename)> after_close = nullptr);
 
-EXPORT void init(bool console, char const * rootDir, char const * processName, uint8_t minutes = 10, uint16_t maxFileCount = 72);
+    EXPORT int setConsole(bool console);
 
-EXPORT void set_log_level(int lvl);
+    EXPORT int setMinutes(int minutes);
 
-EXPORT void set_log_file_rotate_callback(log_file_rotate_callback_t cb);
+    EXPORT int setPriority(int priority);
 
-EXPORT int log(int priority, char const * fmt, va_list args);
+    EXPORT int log(int priority, const char* const tag, const char* const threadName, const char* const msg);
+    EXPORT int log(int priority, const char* const tag, const char* const fmt, ...);
 
-EXPORT int log(int priority, char const * fmt, ...);
-
+    EXPORT int flush();
 }
-
-#define InitLog(console, rootDir, processName, minutes, maxFileCount)      \
-   logger::init(console, rootDir, processName, minutes, maxFileCount)
 
 #ifdef _WIN32
 #define __FILENAME__ (strrchr("\\" __FILE__, '\\') + 1)
@@ -49,34 +49,31 @@ EXPORT int log(int priority, char const * fmt, ...);
 #endif
 
 #define LOG(priority, tag, FMT, ...)        \
-    logger::log(priority,                   \
-    "[%s][%s:%d] : " FMT, tag, __FILENAME__, __LINE__, ##__VA_ARGS__)
+    logger::log(priority, tag,              \
+    "[%s:%d] : " FMT, __FILENAME__, __LINE__, ##__VA_ARGS__)
 
 #define LOGV(tag, FMT, ...)                 \
-    logger::log(logger::_VERBOSE_,          \
-    "[%s][%s:%d] : " FMT, tag, __FILENAME__, __LINE__, ##__VA_ARGS__)
+    logger::log(logger::_VERBOSE_, tag,     \
+    "[%s:%d] : " FMT, __FILENAME__, __LINE__, ##__VA_ARGS__)
 
 #define LOGD(tag, FMT, ...)                 \
-    logger::log(logger::_DEBUG_,            \
-    "[%s][%s:%d] : " FMT, tag, __FILENAME__, __LINE__, ##__VA_ARGS__)
+    logger::log(logger::_DEBUG_, tag,       \
+    "[%s:%d] : " FMT, __FILENAME__, __LINE__, ##__VA_ARGS__)
 
 #define LOGI(tag, FMT, ...)                 \
-    logger::log(logger::_INFO_,             \
-    "[%s][%s:%d] : " FMT, tag, __FILENAME__, __LINE__, ##__VA_ARGS__)
+    logger::log(logger::_INFO_, tag,        \
+    "[%s:%d] : " FMT, __FILENAME__, __LINE__, ##__VA_ARGS__)
 
 #define LOGW(tag, FMT, ...)                 \
-    logger::log(logger::_WARN_,             \
-    "[%s][%s:%d] : " FMT, tag, __FILENAME__, __LINE__, ##__VA_ARGS__)
+    logger::log(logger::_WARN_, tag,        \
+    "[%s:%d] : " FMT, __FILENAME__, __LINE__, ##__VA_ARGS__)
 
 #define LOGE(tag, FMT, ...)                 \
-    logger::log(logger::_ERROR_,            \
-    "[%s][%s:%d] : " FMT, tag, __FILENAME__, __LINE__, ##__VA_ARGS__)
+    logger::log(logger::_ERROR_, tag,       \
+    "[%s:%d] : " FMT, __FILENAME__, __LINE__, ##__VA_ARGS__)
 
 #define LOGF(tag, FMT, ...)                 \
-    logger::log(logger::_FATAL_,            \
-    "[%s][%s:%d] : " FMT, tag, __FILENAME__, __LINE__, ##__VA_ARGS__)
+    logger::log(logger::_FATAL_,   tag,     \
+    "[%s:%d] : " FMT, __FILENAME__, __LINE__, ##__VA_ARGS__)
 
-#define P2S(p)              (p ? "!nullptr" : "nullptr")
-#define B2S(b)              (b ? "true" : "false")
-
-#endif //TUTORIAL_CPP_COMMON_LOGGER_H
+#endif //LOGGER_H
