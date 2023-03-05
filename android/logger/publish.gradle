@@ -1,0 +1,117 @@
+// https://www.tqwba.com/x_d/jishu/197293.html
+// https://docs.gradle.org/current/userguide/publishing_maven.html
+// https://central.sonatype.org/publish/publish-guide/#releasing-to-central
+// https://docs.gradle.org/current/userguide/publishing_maven.html
+// https://www.jianshu.com/p/fa58b51022fe
+
+//apply plugin: 'java-library'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+Properties properties = new Properties()
+try {
+    InputStream inputStream  = project.rootProject.file("local.properties").newInputStream()
+    properties.load(inputStream)
+    inputStream.close()
+} catch (Throwable tr) {
+    project.logger.warn(tr.message)
+}
+
+String USERNAME = properties.getProperty("artifactoryUsername", "")
+String PASSWORD = properties.getProperty("artifactoryPassword", "")
+project.logger.warn("username:${USERNAME}, password:${PASSWORD}")
+
+//task javadocJar(type: Jar) {
+//    classifier = 'javadoc'
+//    from javadoc
+//}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs, android.sourceSets.main.kotlin.srcDirs
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+
+publishing {
+    publications {
+        seker(MavenPublication) {
+            artifact source: "build/outputs/aar/${project.name}-release.aar"
+            artifact source: "build/libs/${project.name}-${project.version}-sources.jar", classifier: "sources"
+            pom {
+                name = 'logger-android'
+                description = 'logger for android'
+                url = 'https://github.com/seker/logger'
+                packaging = 'aar'
+
+                withXml {
+                    def dependenciesNode = asNode().appendNode("dependencies")
+                    configurations.implementation.allDependencies.forEach() {
+                        Dependency dependency ->
+                            if (dependency.version != "unspecified" && dependency.name != "unspecified") {
+                                def dependencyNode = dependenciesNode.appendNode('dependency')
+                                dependencyNode.appendNode('groupId', dependency.group)
+                                dependencyNode.appendNode('artifactId', dependency.name)
+                                dependencyNode.appendNode('version', dependency.version)
+                            }
+                    }
+                }
+
+                licenses {
+                    license {
+                        name = 'GNU LESSER GENERAL PUBLIC LICENSE Version 2.1'
+                        url = 'https://github.com/seker/logger/blob/main/LICENSE'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'xinjian'
+                        name = 'xinjian.liu'
+                        email = '04070628@163.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git@github.com:seker/logger.git'
+                    developerConnection = 'scm:git:ssh://github.com:seker/logger.git'
+                    url = 'https://github.com/seker/logger'
+                }
+            }
+        }
+    }
+
+    repositories {
+//        maven {
+//            name = 'curRepo'
+//            url = "file://${rootDir}/repo"
+//        }
+        maven {
+            name = 'sonatype'
+            def url_release  = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def url_snapshot = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+            url = version.endsWith('SNAPSHOT') ? url_snapshot : url_release
+            logger.warn("url: ${url}")
+            credentials {
+                username = USERNAME
+                password = PASSWORD
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.seker
+}
+
+//编译发布到maven
+task deploy{
+    dependsOn tasks.clean
+    dependsOn tasks.build
+    dependsOn tasks.publish
+    tasks.preBuild.dependsOn(tasks.clean)
+
+    tasks.generatePomFileForSekerPublication.dependsOn(tasks.assemble)
+}
