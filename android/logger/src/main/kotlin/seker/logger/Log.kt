@@ -15,15 +15,16 @@ object Log {
         TAG = tag
     }
 
-    fun init(rootDir: String, baseLogFileName: String, callback: LogFileCallback) {
-        LogJni.init(rootDir, baseLogFileName, LogFileHandler(callback))
+    fun init(rootDir: String, baseLogFileName: String, minutes: Int, callback: LogFileCallback) {
+        val logFileHandler = LogFileHandler(rootDir, baseLogFileName, minutes, callback)
+        LogJni.init(rootDir, baseLogFileName, minutes, logFileHandler)
     }
 
     fun setConsole(console: Boolean) {
         LogJni.setConsole(console)
     }
 
-    fun setProperty(priority: Int) {
+    fun setPriority(priority: Int) {
         PRIORITY = priority
         LogJni.setPriority(priority)
     }

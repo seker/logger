@@ -39,8 +39,8 @@ artifacts {
 publishing {
     publications {
         seker(MavenPublication) {
-            artifact source: "build/outputs/aar/${project.name}-release.aar"
-            artifact source: "build/libs/${project.name}-${project.version}-sources.jar", classifier: "sources"
+            artifact source: "build/outputs/aar/${project.name}-android-release.aar"
+            artifact source: "build/libs/${project.name}-android-${project.version}-sources.jar", classifier: "sources"
             pom {
                 name = 'logger-android'
                 description = 'logger for android'

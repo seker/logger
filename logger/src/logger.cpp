@@ -34,18 +34,28 @@ namespace logger {
     int init(char const * const rootDir,
                   char const * const baseLogFileName,
                   bool console,
-                  int minutes,
                   int priority,
-                  std::function<void(const std::string &filename)> before_open,
-                  std::function<void(const std::string &filename)> after_open,
-                  std::function<void(const std::string &filename)> before_close,
-                  std::function<void(const std::string &filename)> after_close) {
+                  int minutes
+//                  std::function<void(const std::string &filename)> before_open,
+//                  std::function<void(const std::string &filename)> after_open,
+//                  std::function<void(const std::string &filename)> before_close,
+//                  std::function<void(const std::string &filename)> after_close
+         )
+    {
         if (!gLogger) {
             std::string logFileName = rootDir;
             if ('/' != logFileName.at(logFileName.length() - 1)) {
                 logFileName.append("/");
             }
             logFileName.append(baseLogFileName).append(".log");
+
+            LOGD("Jni", "init logger : ============================ init logger ============================");
+            LOGD("Jni", "init logger : rootDir         = %s", rootDir);
+            LOGD("Jni", "init logger : baseLogFileName = %s", baseLogFileName);
+            LOGD("Jni", "init logger : console         = %s", B2S(gConsole));
+            LOGD("Jni", "init logger : priority        = %d", priority);
+            LOGD("Jni", "init logger : minutes         = %d", minutes);
+            LOGD("Jni", "init logger : logFileName     = %s", logFileName.c_str());
 
             gConsole = console;
             gPriority = priority;
@@ -71,14 +81,16 @@ namespace logger {
                                                                                            my_file_event_handlers);
             minutelyFileSink->set_pattern(pattern);
             gLogger = std::make_shared<spdlog::logger>("logger", minutelyFileSink);
-            gLogger->set_level(spdlog::level::trace);
 
             gLogger->info("init logger : ============================ init logger ============================");
             gLogger->info("init logger : rootDir         = {}", rootDir);
             gLogger->info("init logger : baseLogFileName = {}", baseLogFileName);
             gLogger->info("init logger : console         = {}", B2S(gConsole));
+            gLogger->info("init logger : priority        = {}", priority);
             gLogger->info("init logger : minutes         = {}", minutes);
             gLogger->info("init logger : logFileName     = {}", logFileName);
+
+            gLogger->set_level(level(priority));
             return 0;
         }
         return -1;

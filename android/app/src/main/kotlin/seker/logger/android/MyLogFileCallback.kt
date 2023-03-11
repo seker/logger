@@ -1,7 +1,6 @@
 package seker.logger.android
 
-//import seker.logger.Log
-import android.util.Log
+import seker.logger.Log
 import seker.logger.LogFileCallback
 
 /**

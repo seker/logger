@@ -5,7 +5,7 @@ package seker.logger
  */
 internal object LogJni {
 
-    external fun init(rootDir: String, baseLogFileName: String, logFileHandler: LogFileHandler): Int
+    external fun init(rootDir: String, baseLogFileName: String, minutes: Int, logFileHandler: LogFileHandler): Int
 
     external fun setConsole(console: Boolean): Int
 

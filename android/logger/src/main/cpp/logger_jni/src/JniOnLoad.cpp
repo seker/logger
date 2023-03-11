@@ -27,22 +27,6 @@ namespace logger {
 
     static const char * const CLASS_NAME_LOGGER = "seker/logger/LogJni";
 
-    void before_close(const std::string &filename) {
-        attached_env a_env;
-        JNIEnv *env = a_env.env();
-        jstring fn = env->NewStringUTF(filename.c_str());
-        env->CallVoidMethod(gLogFileHandler, gMethodIDBeforeClose, fn);
-        env->DeleteLocalRef(fn);
-    }
-
-    void after_close(const std::string &filename) {
-        attached_env a_env;
-        JNIEnv *env = a_env.env();
-        jstring fn = env->NewStringUTF(filename.c_str());
-        env->CallVoidMethod(gLogFileHandler, gMethodIDAfterClose, fn);
-        env->DeleteLocalRef(fn);
-    }
-
     void before_open(const std::string &filename) {
         attached_env a_env;
         JNIEnv *env = a_env.env();
@@ -58,11 +42,27 @@ namespace logger {
         env->CallVoidMethod(gLogFileHandler, gMethodIDAfterOpen, fn);
         env->DeleteLocalRef(fn);
     }
+
+    void before_close(const std::string &filename) {
+        attached_env a_env;
+        JNIEnv *env = a_env.env();
+        jstring fn = env->NewStringUTF(filename.c_str());
+        env->CallVoidMethod(gLogFileHandler, gMethodIDBeforeClose, fn);
+        env->DeleteLocalRef(fn);
+    }
+
+    void after_close(const std::string &filename) {
+        attached_env a_env;
+        JNIEnv *env = a_env.env();
+        jstring fn = env->NewStringUTF(filename.c_str());
+        env->CallVoidMethod(gLogFileHandler, gMethodIDAfterClose, fn);
+        env->DeleteLocalRef(fn);
+    }
 }
 
 using namespace logger;
 
-jint native_init(JNIEnv *env, jobject thiz, jstring rootDir, jstring baseLogFileName, jobject logFileHandler)
+jint native_init(JNIEnv *env, jobject thiz, jstring rootDir, jstring baseLogFileName, jint minutes, jobject logFileHandler)
 {
     const char *_rootDir = env->GetStringUTFChars(rootDir, nullptr);
     const char *_baseLogFileName = env->GetStringUTFChars(baseLogFileName, nullptr);
@@ -75,7 +75,7 @@ jint native_init(JNIEnv *env, jobject thiz, jstring rootDir, jstring baseLogFile
     gMethodIDAfterClose = env->GetMethodID(classLogFileCallback, "afterClose", "(Ljava/lang/String;)V");
     env->DeleteLocalRef(classLogFileCallback);
 
-    jint ret = init(_rootDir, _baseLogFileName, gConsole, gPriority, 20, before_open, after_open, before_close, after_close);
+    jint ret = init(_rootDir, _baseLogFileName, gConsole, gPriority, minutes/*, before_open, after_open, before_close, after_close*/);
 
     env->ReleaseStringUTFChars(baseLogFileName, _baseLogFileName);
     env->ReleaseStringUTFChars(rootDir, _rootDir);
@@ -101,7 +101,7 @@ jint native_set_minutes(JNIEnv *env, jobject thiz, jint minutes)
     return setMinutes(minutes);
 }
 
-jint native_log(JNIEnv *env, jobject thiz, jint priority, jstring tag, jstring threadName, jstring msg)
+jint native_log(JNIEnv *env, jobject thiz, jint priority, jstring tag, jstring msg, jstring threadName)
 {
     if (gPriority > priority)
     {
@@ -109,13 +109,13 @@ jint native_log(JNIEnv *env, jobject thiz, jint priority, jstring tag, jstring t
     }
 
     const char *_tag = env->GetStringUTFChars(tag, nullptr);
-    const char *_threadName = env->GetStringUTFChars(threadName, nullptr);
     const char *_msg = env->GetStringUTFChars(msg, nullptr);
+    const char *_threadName = env->GetStringUTFChars(threadName, nullptr);
 
     jint ret = log(priority, _tag, _threadName, _msg);
 
-    env->ReleaseStringUTFChars(msg, _msg);
     env->ReleaseStringUTFChars(threadName, _threadName);
+    env->ReleaseStringUTFChars(msg, _msg);
     env->ReleaseStringUTFChars(tag, _tag);
 
     return ret;
@@ -127,7 +127,7 @@ jint native_flush(JNIEnv *env, jobject thiz)
 }
 
 JNINativeMethod jniMethods_Logger[] = {
-        {"init",        "(Ljava/lang/String;Ljava/lang/String;Lseker/logger/LogFileHandler;)I",     (void *) &native_init},
+        {"init",        "(Ljava/lang/String;Ljava/lang/String;ILseker/logger/LogFileHandler;)I",    (void *) &native_init},
         {"setConsole",  "(Z)I",                                                                     (void *) &native_set_console},
         {"setPriority", "(I)I",                                                                     (void *) &native_set_priority},
         {"setMinutes",  "(I)I",                                                                     (void *) &native_set_minutes},

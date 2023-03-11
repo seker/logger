@@ -9,18 +9,23 @@ import seker.logger.Log
  */
 class Application : android.app.Application() {
 
+    companion object {
+        private const val MINUTES = 20
+//        private const val MINUTES = 1
+    }
+
     override fun attachBaseContext(base: Context) {
         super.attachBaseContext(base)
         val rootDir = getExternalFilesDir("applog")
-        Log.init(rootDir!!.absolutePath, "applog", MyLogFileCallback())
+        Log.init(rootDir!!.absolutePath, "applog", MINUTES, MyLogFileCallback())
     }
 
     override fun onCreate() {
         super.onCreate()
 
         Log.setConsole(true)
-//        Log.setMinutes(10)
-        Log.setProperty(android.util.Log.DEBUG)
+        Log.setPriority(android.util.Log.DEBUG)
+        Log.setMinutes(MINUTES)
         Log.setDefaultTag("applog")
 
         seker.asynctask.logger.Log.setLogger(object: seker.asynctask.logger.Logger() {

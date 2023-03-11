@@ -24,11 +24,12 @@ namespace logger
                  char const * const baseLogFileName = "log",
                  bool console = true,
                  int priority = _VERBOSE_,
-                 int minutes = 20,
-                 std::function<void(const std::string &filename)> before_open = nullptr,
-                 std::function<void(const std::string &filename)> after_open = nullptr,
-                 std::function<void(const std::string &filename)> before_close = nullptr,
-                 std::function<void(const std::string &filename)> after_close = nullptr);
+                 int minutes = 20
+//                 std::function<void(const std::string &filename)> before_open = nullptr,
+//                 std::function<void(const std::string &filename)> after_open = nullptr,
+//                 std::function<void(const std::string &filename)> before_close = nullptr,
+//                 std::function<void(const std::string &filename)> after_close = nullptr
+     );
 
     EXPORT int setConsole(bool console);
 
