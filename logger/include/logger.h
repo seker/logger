@@ -23,18 +23,18 @@ namespace logger
     EXPORT int init(char const * const rootDir,
                  char const * const baseLogFileName = "log",
                  bool console = true,
-                 int minutes = 20,
                  int priority = _VERBOSE_,
+                 int minutes = 20,
                  std::function<void(const std::string &filename)> before_open = nullptr,
-                 std::function<void(const std::string &filename, std::FILE *file_stream)> after_open = nullptr,
-                 std::function<void(const std::string &filename, std::FILE *file_stream)> before_close = nullptr,
+                 std::function<void(const std::string &filename)> after_open = nullptr,
+                 std::function<void(const std::string &filename)> before_close = nullptr,
                  std::function<void(const std::string &filename)> after_close = nullptr);
 
     EXPORT int setConsole(bool console);
 
-    EXPORT int setMinutes(int minutes);
-
     EXPORT int setPriority(int priority);
+
+    EXPORT int setMinutes(int minutes);
 
     EXPORT int log(int priority, const char* const tag, const char* const threadName, const char* const msg);
     EXPORT int log(int priority, const char* const tag, const char* const fmt, ...);

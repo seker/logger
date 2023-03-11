@@ -5,6 +5,10 @@
 #include <jni.h>
 #include <android/log.h>
 
+#include <spdlog/spdlog.h>
+#include <spdlog/common.h>
+#include <spdlog/sinks/minutely_file_sink.h>
+
 #include "logger.h"
 #include "attached_env.h"
 
@@ -13,20 +17,21 @@ namespace logger {
 
     extern bool gConsole;
     extern int gPriority;
+    extern std::shared_ptr<spdlog::sinks::minutely_file_sink_mt> minutelyFileSink;
 
-    jobject gFileHandler = nullptr;
+    jobject gLogFileHandler= nullptr;
     jmethodID gMethodIDBeforeClose = nullptr;
     jmethodID gMethodIDAfterClose = nullptr;
     jmethodID gMethodIDBeforeOpen = nullptr;
     jmethodID gMethodIDAfterOpen = nullptr;
 
-    static const char *CLASS_NAME_LOGGER = "seker/logger/LogJni";
+    static const char * const CLASS_NAME_LOGGER = "seker/logger/LogJni";
 
     void before_close(const std::string &filename) {
         attached_env a_env;
         JNIEnv *env = a_env.env();
         jstring fn = env->NewStringUTF(filename.c_str());
-        env->CallVoidMethod(gFileHandler, gMethodIDBeforeClose, fn);
+        env->CallVoidMethod(gLogFileHandler, gMethodIDBeforeClose, fn);
         env->DeleteLocalRef(fn);
     }
 
@@ -34,7 +39,7 @@ namespace logger {
         attached_env a_env;
         JNIEnv *env = a_env.env();
         jstring fn = env->NewStringUTF(filename.c_str());
-        env->CallVoidMethod(gFileHandler, gMethodIDAfterClose, fn);
+        env->CallVoidMethod(gLogFileHandler, gMethodIDAfterClose, fn);
         env->DeleteLocalRef(fn);
     }
 
@@ -42,7 +47,7 @@ namespace logger {
         attached_env a_env;
         JNIEnv *env = a_env.env();
         jstring fn = env->NewStringUTF(filename.c_str());
-        env->CallVoidMethod(gFileHandler, gMethodIDBeforeOpen, fn);
+        env->CallVoidMethod(gLogFileHandler, gMethodIDBeforeOpen, fn);
         env->DeleteLocalRef(fn);
     }
 
@@ -50,62 +55,56 @@ namespace logger {
         attached_env a_env;
         JNIEnv *env = a_env.env();
         jstring fn = env->NewStringUTF(filename.c_str());
-        env->CallVoidMethod(gFileHandler, gMethodIDAfterOpen, fn);
+        env->CallVoidMethod(gLogFileHandler, gMethodIDAfterOpen, fn);
         env->DeleteLocalRef(fn);
     }
 }
 
 using namespace logger;
 
-void jni_initialize(JNIEnv *env, jclass clazz, jobject initConfig) {
-    jclass classInitConfig = env->GetObjectClass(initConfig);
+jint native_init(JNIEnv *env, jobject thiz, jstring rootDir, jstring baseLogFileName, jobject logFileHandler)
+{
+    const char *_rootDir = env->GetStringUTFChars(rootDir, nullptr);
+    const char *_baseLogFileName = env->GetStringUTFChars(baseLogFileName, nullptr);
 
-    jfieldID id_console = env->GetFieldID(classInitConfig, "console", "Z");
-    gConsole = env->GetBooleanField(initConfig, id_console);
+    gLogFileHandler = env->NewGlobalRef(logFileHandler);
+    jclass classLogFileCallback = env->GetObjectClass(gLogFileHandler);
+    gMethodIDBeforeOpen = env->GetMethodID(classLogFileCallback, "beforeOpen", "(Ljava/lang/String;)V");
+    gMethodIDAfterOpen = env->GetMethodID(classLogFileCallback, "afterOpen", "(Ljava/lang/String;)V");
+    gMethodIDBeforeClose = env->GetMethodID(classLogFileCallback, "beforeClose", "(Ljava/lang/String;)V");
+    gMethodIDAfterClose = env->GetMethodID(classLogFileCallback, "afterClose", "(Ljava/lang/String;)V");
+    env->DeleteLocalRef(classLogFileCallback);
 
-    jfieldID id_priority = env->GetFieldID(classInitConfig, "priority", "I");
-    gPriority = env->GetIntField(initConfig, id_priority);
+    jint ret = init(_rootDir, _baseLogFileName, gConsole, gPriority, 20, before_open, after_open, before_close, after_close);
 
-    jfieldID id_root_dir = env->GetFieldID(classInitConfig, "rootDir", "Ljava/lang/String;");
-    auto _rooDir = (jstring) env->GetObjectField(initConfig, id_root_dir);
-    const char *rootDir = env->GetStringUTFChars(_rooDir, nullptr);
+    env->ReleaseStringUTFChars(baseLogFileName, _baseLogFileName);
+    env->ReleaseStringUTFChars(rootDir, _rootDir);
 
-    jfieldID id_process_name = env->GetFieldID(classInitConfig, "processName", "Ljava/lang/String;");
-    auto _processName = (jstring) env->GetObjectField(initConfig, id_process_name);
-    const char *processName = env->GetStringUTFChars(_processName, nullptr);
-
-    jfieldID id_max_file_count = env->GetFieldID(classInitConfig, "maxFileCount", "I");
-    int maxFileCount = env->GetIntField(initConfig, id_max_file_count);
-
-    jfieldID id_minutes = env->GetFieldID(classInitConfig, "minutes", "I");
-    int minutes = env->GetIntField(initConfig, id_minutes);
-
-    jfieldID id_file_handler = env->GetFieldID(classInitConfig, "fileHandler",
-                                               "Lcom/momenta/android/logger/impl/LogFileHandler;");
-    jobject fileHandler = env->GetObjectField(initConfig, id_file_handler);
-    gFileHandler = env->NewGlobalRef(fileHandler);
-
-    jclass classLogFileHandler = env->GetObjectClass(gFileHandler);
-    gMethodIDBeforeOpen = env->GetMethodID(classLogFileHandler, "beforeOpen", "(Ljava/lang/String;)V");
-    gMethodIDAfterOpen = env->GetMethodID(classLogFileHandler, "afterOpen", "(Ljava/lang/String;)V");
-    gMethodIDBeforeClose = env->GetMethodID(classLogFileHandler, "beforeClose", "(Ljava/lang/String;)V");
-    gMethodIDAfterClose = env->GetMethodID(classLogFileHandler, "afterClose", "(Ljava/lang/String;)V");
-
-    init(rootDir, processName);
-
-    env->DeleteLocalRef(classLogFileHandler);
-    env->DeleteLocalRef(fileHandler);
-    env->ReleaseStringUTFChars(_processName, processName);
-    env->ReleaseStringUTFChars(_rooDir, rootDir);
-    env->DeleteLocalRef(classInitConfig);
+    return ret;
 }
 
-void jni_set_priority(JNIEnv *env, jclass clazz, jint priority) {
-    gPriority = priority;
+jint native_set_console(JNIEnv *env, jobject thiz, jboolean console)
+{
+    LOGD("Jni", "setConsole: %s", B2S(console));
+    return setConsole(console);
 }
 
-jint jni_log(JNIEnv *env, jclass clazz, jint priority, jstring tag, jstring threadName, jstring msg) {
-    if (gPriority > priority) {
+jint native_set_priority(JNIEnv *env, jobject thiz, jint priority)
+{
+    LOGD("Jni", "setPriority: %d",priority);
+    return setPriority(priority);
+}
+
+jint native_set_minutes(JNIEnv *env, jobject thiz, jint minutes)
+{
+    LOGD("Jni", "setMinutes: %d",minutes);
+    return setMinutes(minutes);
+}
+
+jint native_log(JNIEnv *env, jobject thiz, jint priority, jstring tag, jstring threadName, jstring msg)
+{
+    if (gPriority > priority)
+    {
         return -1;
     }
 
@@ -122,27 +121,42 @@ jint jni_log(JNIEnv *env, jclass clazz, jint priority, jstring tag, jstring thre
     return ret;
 }
 
-void jni_flush(JNIEnv *env, jclass clazz) {
-    flush();
+jint native_flush(JNIEnv *env, jobject thiz)
+{
+    return flush();
 }
 
 JNINativeMethod jniMethods_Logger[] = {
-//        {"initialize",              "(Lcom/momenta/android/logger/impl/InitConfig;)V",              (void *) &jni_initialize},
-//        {"priority",                "(I)V",                                                         (void *) &jni_set_priority},
-//        {"log",                     "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)I",   (void *) &jni_log},
-//        {"flushToFile",             "()V",                                                          (void *) &jni_flush},
+        {"init",        "(Ljava/lang/String;Ljava/lang/String;Lseker/logger/LogFileHandler;)I",     (void *) &native_init},
+        {"setConsole",  "(Z)I",                                                                     (void *) &native_set_console},
+        {"setPriority", "(I)I",                                                                     (void *) &native_set_priority},
+        {"setMinutes",  "(I)I",                                                                     (void *) &native_set_minutes},
+        {"log",         "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)I",               (void *) &native_log},
+        {"flush",       "()I",                                                                      (void *) &native_flush},
 };
 
-void registerLoggerNativeMethods(JNIEnv *env) {
+void registerLoggerNativeMethods(JNIEnv *env)
+{
     jclass clz = env->FindClass(logger::CLASS_NAME_LOGGER);
-    env->RegisterNatives(clz, jniMethods_Logger, sizeof(jniMethods_Logger) / sizeof(JNINativeMethod));
+    jint ret = env->RegisterNatives(clz, jniMethods_Logger, sizeof(jniMethods_Logger) / sizeof(JNINativeMethod));
+    LOGD("Jni", "RegisterNatives() : ret=%d", ret);
     env->DeleteLocalRef(clz);
 }
 
-JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
+void unregisterLoggerNativeMethods(JNIEnv *env)
+{
+    jclass clz = env->FindClass(logger::CLASS_NAME_LOGGER);
+    jint ret = env->UnregisterNatives(clz);
+    LOGD("Jni", "UnregisterNatives() : ret=%d", ret);
+    env->DeleteLocalRef(clz);
+}
+
+JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
+{
     JNIEnv *env;
 
-    if (vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6) != JNI_OK) {
+    if (vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6) != JNI_OK)
+    {
         return -1;
     }
 
@@ -155,7 +169,17 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     return JNI_VERSION_1_6;
 }
 
-JNIEXPORT void JNI_OnUnload(JavaVM *vm, void *reserved) {
+JNIEXPORT void JNI_OnUnload(JavaVM *vm, void *reserved)
+{
+    JNIEnv *env;
+
+    if (vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6) != JNI_OK)
+    {
+        return;
+    }
+
+    unregisterLoggerNativeMethods(env);
+
     LOGD("logger", "JNI_OnUnload()");
 }
 

@@ -20,6 +20,8 @@ namespace logger {
 
     int gPriority = _VERBOSE_;
     bool gConsole = true;
+    std::shared_ptr<spdlog::sinks::minutely_file_sink_mt> minutelyFileSink = nullptr;
+    std::shared_ptr<spdlog::logger> gLogger = nullptr;
 
     extern void before_close(const std::string &filename);
 
@@ -29,16 +31,14 @@ namespace logger {
 
     extern void after_open(const std::string &filename);
 
-    std::shared_ptr<spdlog::logger> gLogger = nullptr;
-
     int init(char const * const rootDir,
                   char const * const baseLogFileName,
                   bool console,
                   int minutes,
                   int priority,
                   std::function<void(const std::string &filename)> before_open,
-                  std::function<void(const std::string &filename, std::FILE *file_stream)> after_open,
-                  std::function<void(const std::string &filename, std::FILE *file_stream)> before_close,
+                  std::function<void(const std::string &filename)> after_open,
+                  std::function<void(const std::string &filename)> before_close,
                   std::function<void(const std::string &filename)> after_close) {
         if (!gLogger) {
             std::string logFileName = rootDir;
@@ -46,7 +46,9 @@ namespace logger {
                 logFileName.append("/");
             }
             logFileName.append(baseLogFileName).append(".log");
-            spdlog::info("init rootDir={0}, baseLogFileName={1}, logFileName={2}", rootDir, baseLogFileName, logFileName.c_str());
+
+            gConsole = console;
+            gPriority = priority;
 
             spdlog::file_event_handlers my_file_event_handlers = spdlog::file_event_handlers();
             my_file_event_handlers.before_open = [&](const spdlog::filename_t &filename) {
@@ -56,26 +58,49 @@ namespace logger {
                 if (spdlog::details::os::filesize(file_stream) > 0) {
                     fputs("\n\n", file_stream);
                 }
-                after_open(filename, file_stream);
+                after_open(filename);
             };
             my_file_event_handlers.before_close = [&](const spdlog::filename_t &filename, std::FILE *file_stream) {
-                before_close(filename, file_stream);
+                before_close(filename);
             };
             my_file_event_handlers.after_close = [&](const spdlog::filename_t &filename) {
                 after_close(filename);
             };
-            auto fileSink = std::make_shared<spdlog::sinks::minutely_file_sink_mt>(logFileName.c_str(), false, minutes,
-                                                                                   0,
-                                                                                   my_file_event_handlers);
-            fileSink->set_pattern(pattern);
-            gLogger = std::make_shared<spdlog::logger>("logger", fileSink);
+            minutelyFileSink = std::make_shared<spdlog::sinks::minutely_file_sink_mt>(logFileName, false, minutes,
+                                                                                           0,
+                                                                                           my_file_event_handlers);
+            minutelyFileSink->set_pattern(pattern);
+            gLogger = std::make_shared<spdlog::logger>("logger", minutelyFileSink);
             gLogger->set_level(spdlog::level::trace);
 
             gLogger->info("init logger : ============================ init logger ============================");
             gLogger->info("init logger : rootDir         = {}", rootDir);
             gLogger->info("init logger : baseLogFileName = {}", baseLogFileName);
             gLogger->info("init logger : console         = {}", B2S(gConsole));
+            gLogger->info("init logger : minutes         = {}", minutes);
             gLogger->info("init logger : logFileName     = {}", logFileName);
+            return 0;
+        }
+        return -1;
+    }
+
+    int setConsole(bool console)
+    {
+        gConsole = console;
+        return 0;
+    }
+
+    int setPriority(int priority)
+    {
+        gPriority = priority;
+        return 0;
+    }
+
+    int setMinutes(int minutes)
+    {
+        if (minutelyFileSink)
+        {
+            minutelyFileSink->set_minutes(minutes);
             return 0;
         }
         return -1;

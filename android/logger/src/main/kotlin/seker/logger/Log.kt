@@ -11,12 +11,12 @@ object Log {
 
     private var PRIORITY = VERBOSE
 
-    fun init(rootDir: String, baseLogFileName: String, callback: LogFileCallback) {
-        LogJni.init(rootDir, baseLogFileName, callback)
+    fun setDefaultTag(tag: String) {
+        TAG = tag
     }
 
-    fun setMinutes(minutes: Int) {
-        LogJni.setMinutes(minutes)
+    fun init(rootDir: String, baseLogFileName: String, callback: LogFileCallback) {
+        LogJni.init(rootDir, baseLogFileName, LogFileHandler(callback))
     }
 
     fun setConsole(console: Boolean) {
@@ -28,11 +28,11 @@ object Log {
         LogJni.setPriority(priority)
     }
 
-    fun setDefaultTag(tag: String) {
-        TAG = tag
+    fun setMinutes(minutes: Int) {
+        LogJni.setMinutes(minutes)
     }
 
-    private fun log(priority: Int, tag: String = TAG, msg: String? = null, tr: Throwable? = null) : Int {
+    fun log(priority: Int, tag: String = TAG, msg: String? = null, tr: Throwable? = null) : Int {
         return if (null == msg)  {
             if (null == tr) {
                 -1
@@ -94,5 +94,10 @@ object Log {
         } else {
             -1
         }
+    }
+
+    fun flush(reason: String) {
+        i(TAG, "flush($reason)")
+        LogJni.flush()
     }
 }
