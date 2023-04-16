@@ -35,6 +35,7 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "android_logger"
+rootProject.name = "logger-root"
 include ':app'
-include ':logger'
+include ':logger-android'
+project(":logger-android").projectDir = file("logger")

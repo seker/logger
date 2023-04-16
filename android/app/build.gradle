@@ -13,15 +13,18 @@ def screenOrientation = properties.getOrDefault("screenOrientation", "sensorPort
 
 android {
     namespace 'seker.logger.android'
-    compileSdk 33
-    buildToolsVersion '33.0.2'
+
+    compileSdkVersion versions.compileSdkVersion
+    buildToolsVersion versions.buildToolsVersion
 
     defaultConfig {
-        applicationId "seker.logger.android"
-        minSdk 21
-        targetSdk 33
+        minSdkVersion versions.minSdkVersion
+        targetSdkVersion versions.targetSdkVersion
+
         versionCode 1
         versionName "1.0.0"
+
+        applicationId "seker.logger.android"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -49,20 +52,21 @@ android {
 }
 
 dependencies {
-    implementation 'io.github.seker:asynctask-android:1.0.1'
-    implementation 'io.github.seker:framework-android:1.0.1'
+    implementation project(':logger-android')
 
-    implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'com.google.android.material:material:1.6.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.1'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
+    implementation "io.github.seker:asynctask-android:${versions.seker_asynctask}"
+    implementation "io.github.seker:framework-android:${versions.seker_framework}"
 
-    implementation project(':logger')
+    implementation "com.google.android.material:material:${versions.google_material}"
 
-    testImplementation 'junit:junit:4.13.2'
+    implementation "androidx.core:core-ktx:${versions.androidx_core}"
+    implementation "androidx.appcompat:appcompat:${versions.androidx_appcompat}"
+    implementation "androidx.constraintlayout:constraintlayout:${versions.androidx_constraintlayout}"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:${versions.androidx_lifecycle}"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:${versions.androidx_lifecycle}"
 
-    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
+
+    testImplementation "junit:junit:${versions.junit}"
+    androidTestImplementation "androidx.test.ext:junit:${versions.junit_ext}"
+    androidTestImplementation "androidx.test.espressoespresso:espresso-core:${versions.junit_junit_ext}"
 }

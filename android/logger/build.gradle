@@ -5,16 +5,17 @@ plugins {
 
 group = 'io.github.seker'
 archivesBaseName = "logger-android"
-version = '1.0.1-SNAPSHOT'
+version = '1.0.2-SNAPSHOT'
 
 android {
     namespace 'seker.logger'
-    compileSdk 33
-    buildToolsVersion '33.0.2'
+
+    compileSdkVersion versions.compileSdkVersion
+    buildToolsVersion versions.buildToolsVersion
 
     defaultConfig {
-        minSdk 21
-        targetSdk 33
+        minSdkVersion versions.minSdkVersion
+        targetSdkVersion versions.targetSdkVersion
 
         externalNativeBuild {
             cmake {
@@ -55,15 +56,9 @@ android {
 }
 
 dependencies {
-
-//    implementation 'androidx.core:core-ktx:1.7.0'
-//    implementation 'androidx.appcompat:appcompat:1.4.1'
-//    implementation 'com.google.android.material:material:1.5.0'
-
-    testImplementation 'junit:junit:4.13.2'
-
-    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
+    testImplementation "junit:junit:${versions.junit}"
+    androidTestImplementation "androidx.test.ext:junit:${versions.junit_ext}"
+    androidTestImplementation "androidx.test.espressoespresso:espresso-core:${versions.junit_junit_ext}"
 }
 
 apply from: 'publish.gradle'

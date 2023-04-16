@@ -47,7 +47,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             Log.f(TAG, "f : msg")
             Log.f(TAG, "f : msg", RuntimeException("f : tr"))
             Log.f(TAG, RuntimeException("f : tr"))
-        }, "mainVM", 1, 5, TimeUnit.SECONDS)
+        }, 1, 5, TimeUnit.SECONDS)
     }
 
     companion object {
