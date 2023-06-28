@@ -13,14 +13,22 @@
 #include "logger.h"
 #include "priority.h"
 
-namespace logger {
-
 #ifdef __ANDROID__
-    #include <sys/prctl.h>
+    #include "attached_env.h"
     std::string getThreadName() {
-        char name[16] = {'\0'};
-        prctl(PR_GET_NAME, name);
-        return {name};
+        attached_env a_env;
+        JNIEnv *env = a_env.env();
+        jclass threadClass = env->FindClass("java/lang/Thread");
+        jmethodID currentThreadMethod = env->GetStaticMethodID(threadClass, "currentThread", "()Ljava/lang/Thread;");
+        jobject currentThread = env->CallStaticObjectMethod(threadClass, currentThreadMethod);
+        jmethodID getNameMethod = env->GetMethodID(threadClass, "getName", "()Ljava/lang/String;");
+        auto name = (jstring) env->CallObjectMethod(currentThread, getNameMethod);
+
+        const char *nameCString = env->GetStringUTFChars(name, nullptr);
+        std::string nameString(nameCString);
+        env->ReleaseStringUTFChars(name, nameCString);
+
+        return nameString;
     }
 
 #elif __linux__ || __APPLE__
@@ -54,6 +62,9 @@ namespace logger {
         return "unknown";
     }
 #endif
+
+namespace logger {
+
 
 #define LOG_BUF_SIZE 1024
     static char const *pattern = "%H:%M:%S.%e [%L][tid=%t]%v";
