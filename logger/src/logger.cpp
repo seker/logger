@@ -15,6 +15,46 @@
 
 namespace logger {
 
+#ifdef __ANDROID__
+    #include <sys/prctl.h>
+    std::string getThreadName() {
+        char name[16] = {'\0'};
+        prctl(PR_GET_NAME, name);
+        return {name};
+    }
+
+#elif __linux__ || __APPLE__
+    #include <pthread.h>
+    std::array<char, 16> buffer;
+    std::string getThreadName() {
+        pthread_getname_np(pthread_self(), buffer.data(), buffer.max_size());
+        return {buffer.data()};
+    }
+#elif _WIN32
+    #include <Windows.h>
+    std::array<WCHAR, 1024> buffer;
+    std::string getThreadName() {
+        DWORD threadId = GetCurrentThreadId();
+        HANDLE hThread = OpenThread(THREAD_QUERY_LIMITED_INFORMATION, FALSE, threadId);
+        if (hThread) {
+            HRESULT hr = GetThreadDescription(hThread, &buffer[0]);
+            CloseHandle(hThread);
+            if (SUCCEEDED(hr)) {
+                // Convert wide string to narrow string
+                int size_needed = WideCharToMultiByte(CP_UTF8, 0, &buffer[0], -1, NULL, 0, NULL, NULL);
+                std::string strTo(size_needed-1, 0);  // reduce by 1 to exclude the null terminator
+                WideCharToMultiByte(CP_UTF8, 0, &buffer[0], -1, &strTo[0], size_needed, NULL, NULL);
+                return strTo;
+            }
+        }
+        return "unknown";
+    }
+#else
+    std::string getThreadName() {
+        return "unknown";
+    }
+#endif
+
 #define LOG_BUF_SIZE 1024
     static char const *pattern = "%H:%M:%S.%e [%L][tid=%t]%v";
 
@@ -182,7 +222,7 @@ namespace logger {
         va_end(args);
         msg.resize(static_cast<size_t>(len));
 
-        return log(priority, tag, "unknown", msg.c_str());
+        return log(priority, tag, getThreadName().c_str(), msg.c_str());
     }
 
     int flush() {

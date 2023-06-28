@@ -5,7 +5,7 @@ plugins {
 
 group = 'io.github.seker'
 archivesBaseName = "logger-android"
-version = '1.0.2-SNAPSHOT'
+version = '1.0.3-SNAPSHOT'
 
 android {
     namespace 'seker.logger'
@@ -16,6 +16,7 @@ android {
     defaultConfig {
         minSdkVersion versions.minSdkVersion
         targetSdkVersion versions.targetSdkVersion
+        ndkVersion versions.ndkVersion
 
         externalNativeBuild {
             cmake {
@@ -25,8 +26,8 @@ android {
         }
 
         ndk {
-//            abiFilters 'armeabi-v7a', 'arm64-v8a'
-            abiFilters 'arm64-v8a'
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+            // abiFilters 'arm64-v8a'
         }
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -50,7 +51,7 @@ android {
     externalNativeBuild {
         cmake {
             path "src/main/cpp/CMakeLists.txt"
-            version '3.22.1'
+            version versions.cmakeVersion
         }
     }
 }

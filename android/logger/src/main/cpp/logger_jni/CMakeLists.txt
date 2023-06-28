@@ -20,8 +20,8 @@ include_directories(
 )
 
 ## 自动构建源文件目录
-aux_source_directory( src SRCS_LOGGER )
-aux_source_directory( ${CMAKE_SOURCE_DIR}/../../../../../logger/src SRCS_LOGGER_JNI )
+aux_source_directory( src SRCS_LOGGER_JNI )
+aux_source_directory( ${CMAKE_SOURCE_DIR}/../../../../../logger/src SRCS_LOGGER )
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
