@@ -15,20 +15,25 @@
 
 #ifdef __ANDROID__
     #include "attached_env.h"
+    #include "lrucache.hpp"
+    #include "spdlog/details/os.h"
+    cache::lru_cache<size_t, std::string> thread_name_cache(20);
     std::string getThreadName() {
-        attached_env a_env;
-        JNIEnv *env = a_env.env();
-        jclass threadClass = env->FindClass("java/lang/Thread");
-        jmethodID currentThreadMethod = env->GetStaticMethodID(threadClass, "currentThread", "()Ljava/lang/Thread;");
-        jobject currentThread = env->CallStaticObjectMethod(threadClass, currentThreadMethod);
-        jmethodID getNameMethod = env->GetMethodID(threadClass, "getName", "()Ljava/lang/String;");
-        auto name = (jstring) env->CallObjectMethod(currentThread, getNameMethod);
+        size_t tid = spdlog::details::os::thread_id();
+        if (!thread_name_cache.exists(tid)) {
+            attached_env a_env;
+            JNIEnv *env = a_env.env();
+            jclass threadClass = env->FindClass("java/lang/Thread");
+            jmethodID currentThreadMethod = env->GetStaticMethodID(threadClass, "currentThread", "()Ljava/lang/Thread;");
+            jobject currentThread = env->CallStaticObjectMethod(threadClass, currentThreadMethod);
+            jmethodID getNameMethod = env->GetMethodID(threadClass, "getName", "()Ljava/lang/String;");
+            auto name = (jstring) env->CallObjectMethod(currentThread, getNameMethod);
 
-        const char *nameCString = env->GetStringUTFChars(name, nullptr);
-        std::string nameString(nameCString);
-        env->ReleaseStringUTFChars(name, nameCString);
-
-        return nameString;
+            const char *nameCString = env->GetStringUTFChars(name, nullptr);
+            thread_name_cache.put(tid, {nameCString});
+            env->ReleaseStringUTFChars(name, nameCString);
+        }
+        return thread_name_cache.get(tid);
     }
 
 #elif __linux__ || __APPLE__
