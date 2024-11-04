@@ -27,17 +27,5 @@ class Application : android.app.Application() {
         Log.setPriority(android.util.Log.DEBUG)
         Log.setMinutes(MINUTES)
         Log.setDefaultTag("applog")
-
-        seker.asynctask.logger.Log.setLogger(object: seker.asynctask.logger.Logger() {
-            override fun println(priority: Int, tag: String, msg: String): Int {
-                return Log.log(priority, tag, msg)
-            }
-        })
-
-        seker.framework.logger.Log.setLogger(object : seker.framework.logger.Logger() {
-            override fun println(priority: Int, tag: String, msg: String): Int {
-                return Log.log(priority, tag, msg)
-            }
-        })
     }
 }

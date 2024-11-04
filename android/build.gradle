@@ -17,9 +17,6 @@ ext {
             cmakeVersion             : "3.22.1",
             ndkVersion               : "25.2.9519653",
 
-            seker_asynctask          : "1.0.2-SNAPSHOT",
-            seker_framework          : "1.0.3-SNAPSHOT",
-
             google_material          : '1.12.0',
 
             androidx_appcompat       : "1.7.0",

@@ -54,9 +54,6 @@ android {
 dependencies {
     implementation project(':logger-android')
 
-    implementation "io.github.seker:asynctask-android:${versions.seker_asynctask}"
-    implementation "io.github.seker:framework-android:${versions.seker_framework}"
-
     implementation "com.google.android.material:material:${versions.google_material}"
 
     implementation "androidx.core:core-ktx:${versions.androidx_core}"
