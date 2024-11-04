@@ -1,12 +1,10 @@
-// https://www.tqwba.com/x_d/jishu/197293.html
 // https://docs.gradle.org/current/userguide/publishing_maven.html
 // https://central.sonatype.org/publish/publish-guide/#releasing-to-central
-// https://docs.gradle.org/current/userguide/publishing_maven.html
 // https://www.jianshu.com/p/fa58b51022fe
 
 //apply plugin: 'java-library'
 apply plugin: 'maven-publish'
-apply plugin: 'signing'
+//apply plugin: 'signing'
 
 Properties properties = new Properties()
 try {
@@ -26,7 +24,7 @@ project.logger.warn("username:${USERNAME}, password:${PASSWORD}")
 //    from javadoc
 //}
 
-task sourcesJar(type: Jar) {
+tasks.register('sourcesJar', Jar) {
 //    classifier = 'sources'
     from android.sourceSets.main.java.srcDirs, android.sourceSets.main.kotlin.srcDirs
 }
@@ -38,6 +36,7 @@ artifacts {
 
 publishing {
     publications {
+        // 'PubName' 是 'seker'
         seker(MavenPublication) {
             artifact source: "build/outputs/aar/${project.name}-release.aar"
             artifact source: "build/libs/${project.name}-${project.version}.jar", classifier: "sources"
@@ -102,12 +101,12 @@ publishing {
     }
 }
 
-signing {
-    sign publishing.publications.seker
-}
+//signing {
+//    sign publishing.publications.seker
+//}
 
 //编译发布到maven
-task deploy{
+tasks.register('deploy') {
     dependsOn tasks.clean
     dependsOn tasks.build
     dependsOn tasks.publish
