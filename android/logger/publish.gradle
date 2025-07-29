@@ -3,7 +3,7 @@
 // https://www.jianshu.com/p/fa58b51022fe
 
 //apply plugin: 'java-library'
-apply plugin: 'maven-publish'
+apply plugin: libs.plugins.maven.publish.get().pluginId
 //apply plugin: 'signing'
 
 Properties properties = new Properties()
@@ -42,20 +42,22 @@ publishing {
             artifact source: "build/libs/${project.name}-${project.version}.jar", classifier: "sources"
             pom {
                 name = 'logger-android'
+                groupId = "${project.group}"
+                artifactId = 'logger-android'
+                version = "${project.version}"
+                packaging = 'aar'
                 description = 'logger for android'
                 url = 'https://github.com/seker/logger'
-                packaging = 'aar'
 
                 withXml {
                     def dependenciesNode = asNode().appendNode("dependencies")
-                    configurations.implementation.allDependencies.forEach() {
-                        Dependency dependency ->
-                            if (dependency.version != "unspecified" && dependency.name != "unspecified") {
-                                def dependencyNode = dependenciesNode.appendNode('dependency')
-                                dependencyNode.appendNode('groupId', dependency.group)
-                                dependencyNode.appendNode('artifactId', dependency.name)
-                                dependencyNode.appendNode('version', dependency.version)
-                            }
+                    configurations.implementation.allDependencies.forEach() { Dependency dependency ->
+                        if (dependency.version != "unspecified" && dependency.name != "unspecified") {
+                            def dependencyNode = dependenciesNode.appendNode('dependency')
+                            dependencyNode.appendNode('groupId', dependency.group)
+                            dependencyNode.appendNode('artifactId', dependency.name)
+                            dependencyNode.appendNode('version', dependency.version)
+                        }
                     }
                 }
 

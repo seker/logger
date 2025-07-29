@@ -1,6 +1,6 @@
 plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
+    alias libs.plugins.androidApplication
+    alias libs.plugins.kotlinAndroid
 }
 
 Properties properties = new Properties()
@@ -14,12 +14,11 @@ def screenOrientation = properties.getOrDefault("screenOrientation", "sensorPort
 android {
     namespace 'seker.logger.android'
 
-    compileSdkVersion versions.compileSdkVersion
-    buildToolsVersion versions.buildToolsVersion
+    compileSdkVersion libs.versions.android.compileSdk.get().toInteger()
 
     defaultConfig {
-        minSdkVersion versions.minSdkVersion
-        targetSdkVersion versions.targetSdkVersion
+        minSdkVersion libs.versions.android.minSdk.get().toInteger()
+        targetSdkVersion libs.versions.android.targetSdk.get().toInteger()
 
         versionCode 1
         versionName "1.0.0"
@@ -40,30 +39,29 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = '17'
-        freeCompilerArgs += [
-                "-Xjvm-default=all",
-        ]
+
+    kotlin {
+        compilerOptions {
+            freeCompilerArgs.add("-Xjvm-default=all")
+        }
     }
 }
 
 dependencies {
-    implementation project(':logger-android')
+    implementation project(':logger')
 
-    implementation "com.google.android.material:material:${versions.google_material}"
+    implementation libs.google.material
 
-    implementation "androidx.core:core-ktx:${versions.androidx_core}"
-    implementation "androidx.appcompat:appcompat:${versions.androidx_appcompat}"
-    implementation "androidx.constraintlayout:constraintlayout:${versions.androidx_constraintlayout}"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:${versions.androidx_lifecycle}"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:${versions.androidx_lifecycle}"
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.appcompat
+    implementation libs.androidx.constraintlayout
+    implementation libs.androidx.lifecycle.livedata.ktx
+    implementation libs.androidx.lifecycle.viewmodel
 
-
-    testImplementation "junit:junit:${versions.junit}"
-    androidTestImplementation "androidx.test.ext:junit:${versions.androidx_junit}"
-    androidTestImplementation "androidx.test.espresso:espresso-core:${versions.espresso}"
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.testExt.junit
+    androidTestImplementation libs.androidx.espresso.core
 }

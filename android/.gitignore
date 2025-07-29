@@ -6,6 +6,7 @@
 .DS_Store
 
 captures
-build
+build/
+build.log
 
 local.properties
