@@ -1,6 +1,15 @@
 pluginManagement {
     repositories {
         mavenLocal()
+        google {
+            mavenContent {
+                includeGroupByRegex("androidx.*")
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+            }
+        }
+        mavenCentral()
+        gradlePluginPortal()
         maven {
             url 'https://maven.aliyun.com/repository/public/'   // central仓和jcenter仓的聚合仓
         }
@@ -10,15 +19,20 @@ pluginManagement {
         maven {
             url 'https://maven.aliyun.com/repository/google'
         }
-        gradlePluginPortal()
-        google()
-        mavenCentral()
     }
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         mavenLocal()
+        google {
+            mavenContent {
+                includeGroupByRegex("androidx.*")
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+            }
+        }
+        mavenCentral()
         maven {
             url 'https://s01.oss.sonatype.org/content/repositories/releases/'
         }
@@ -31,11 +45,8 @@ dependencyResolutionManagement {
         maven {
             url 'https://maven.aliyun.com/repository/google'
         }
-        google()
-        mavenCentral()
     }
 }
 rootProject.name = "logger-root"
 include ':app'
-include ':logger-android'
-project(":logger-android").projectDir = file("logger")
+include ':logger'
