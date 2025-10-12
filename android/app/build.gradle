@@ -1,7 +1,10 @@
 plugins {
-    alias libs.plugins.androidApplication
+    id("osgi.android.bundle")
     alias libs.plugins.kotlinAndroid
 }
+
+group = 'io.github.seker'
+version = '1.0.3-SNAPSHOT'
 
 Properties properties = new Properties()
 File localPropertiesFile = project.rootProject.file('local.properties')
@@ -53,13 +56,13 @@ android {
 dependencies {
     implementation project(':logger')
 
-    implementation libs.google.material
+    compileOnlyApi libs.google.material
 
-    implementation libs.androidx.core.ktx
-    implementation libs.androidx.appcompat
-    implementation libs.androidx.constraintlayout
-    implementation libs.androidx.lifecycle.livedata.ktx
-    implementation libs.androidx.lifecycle.viewmodel
+    compileOnlyApi libs.androidx.core.ktx
+    compileOnlyApi libs.androidx.appcompat
+    compileOnlyApi libs.androidx.constraintlayout
+    compileOnlyApi libs.androidx.lifecycle.livedata.ktx
+    compileOnlyApi libs.androidx.lifecycle.viewmodel
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.testExt.junit

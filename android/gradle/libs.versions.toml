@@ -17,6 +17,7 @@ kotlinx-coroutines = "1.10.2"
 google-material = "1.13.0"
 
 agp = "8.13.0"
+osgi-android-plugin = "8.13.0-SNAPSHOT"
 kotlin = "2.2.20"
 composeHotReload = "1.0.0-rc01"
 composeMultiplatform = "1.9.0"
@@ -40,6 +41,8 @@ androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 google-material = { module = "com.google.android.material:material", version.ref = "google-material"}
 
+osgi-android-plugin = { module = "osgi.android.plugin:plugins", version.ref = "osgi-android-plugin"}
+
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
@@ -49,3 +52,9 @@ composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMul
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 maven-publish = { id = "maven-publish" }  # 仅声明ID，无版本
+
+## 映射三个插件 ID 到对应的版本和 Maven 坐标
+## 格式：插件ID = { id = "插件ID", group = "groupId", name = "artifactId", version.ref = "版本变量" }
+#osgiAppPlugin = { id = "osgi.android.application",  version.ref = "agp" }
+#osgiBundlePlugin = { id = "osgi.android.bundle",  version.ref = "agp" }
+#osgiLibraryPlugin = { id = "osgi.android.library",  version.ref = "agp" }
