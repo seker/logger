@@ -1,6 +1,5 @@
 plugins {
     alias libs.plugins.androidApplication
-    alias libs.plugins.kotlinAndroid
 }
 
 Properties properties = new Properties()
@@ -14,11 +13,11 @@ def screenOrientation = properties.getOrDefault("screenOrientation", "sensorPort
 android {
     namespace 'seker.logger.android'
 
-    compileSdkVersion libs.versions.android.compileSdk.get().toInteger()
+    compileSdk libs.versions.android.compileSdk.get().toInteger()
 
     defaultConfig {
-        minSdkVersion libs.versions.android.minSdk.get().toInteger()
-        targetSdkVersion libs.versions.android.targetSdk.get().toInteger()
+        minSdk libs.versions.android.minSdk.get().toInteger()
+        targetSdk libs.versions.android.targetSdk.get().toInteger()
 
         versionCode 1
         versionName "1.0.0"
@@ -39,14 +38,13 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_21
-        targetCompatibility JavaVersion.VERSION_21
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
-
-    kotlin {
-        compilerOptions {
-            freeCompilerArgs.add("-Xjvm-default=all")
-        }
+    lint {
+        targetSdk libs.versions.android.targetSdk.get().toInteger()
+    }
+    testOptions {
     }
 }
 

@@ -1,6 +1,5 @@
 plugins {
     alias libs.plugins.androidLibrary
-    alias libs.plugins.kotlinAndroid
 }
 
 group = 'io.github.seker'
@@ -9,11 +8,11 @@ version = '1.0.3-SNAPSHOT'
 android {
     namespace 'seker.logger'
 
-    compileSdkVersion libs.versions.android.compileSdk.get().toInteger()
+    compileSdk libs.versions.android.compileSdk.get().toInteger()
 
     defaultConfig {
-        minSdkVersion libs.versions.android.minSdk.get().toInteger()
-        targetSdkVersion libs.versions.android.targetSdk.get().toInteger()
+        minSdk libs.versions.android.minSdk.get().toInteger()
+        targetSdk libs.versions.android.targetSdk.get().toInteger()
 
         ndkVersion libs.versions.ndkVersion.get()
 
@@ -41,10 +40,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_21
-        targetCompatibility JavaVersion.VERSION_21
-    }
-    kotlinOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     externalNativeBuild {
@@ -52,6 +49,12 @@ android {
             path "src/main/cpp/CMakeLists.txt"
             version libs.versions.cmakeVersion.get()
         }
+    }
+    lint {
+        targetSdk libs.versions.android.targetSdk.get().toInteger()
+    }
+    testOptions {
+        targetSdk libs.versions.android.targetSdk.get().toInteger()
     }
 }
 

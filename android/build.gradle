@@ -4,6 +4,6 @@ plugins {
     alias libs.plugins.androidApplication apply false
     alias libs.plugins.androidLibrary apply false
 
-    // https://mvnrepository.com/artifact/org.jetbrains.kotlin.android/org.jetbrains.kotlin.android.gradle.plugin
-    alias libs.plugins.kotlinAndroid apply false
+//    // https://mvnrepository.com/artifact/org.jetbrains.kotlin.android/org.jetbrains.kotlin.android.gradle.plugin
+//    alias libs.plugins.kotlinAndroid apply false
 }
