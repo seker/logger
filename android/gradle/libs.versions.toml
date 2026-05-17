@@ -33,4 +33,3 @@ google-material = { module = "com.google.android.material:material", version.ref
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
-maven-publish = { id = "maven-publish" }  # 仅声明ID，无版本

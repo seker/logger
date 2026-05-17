@@ -1,9 +1,9 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
     // https://mvnrepository.com/artifact/com.android.application/com.android.application.gradle.plugin
-    alias libs.plugins.androidApplication apply false
-    alias libs.plugins.androidLibrary apply false
+    alias(libs.plugins.androidApplication) apply false
+    alias(libs.plugins.androidLibrary) apply false
 
 //    // https://mvnrepository.com/artifact/org.jetbrains.kotlin.android/org.jetbrains.kotlin.android.gradle.plugin
-//    alias libs.plugins.kotlinAndroid apply false
+//    alias(libs.plugins.kotlinAndroid) apply false
 }
